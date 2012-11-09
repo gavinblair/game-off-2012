@@ -1,0 +1,24 @@
+<html>
+<head>
+<script>
+var conn;
+
+function start()
+{
+   conn = new WebSocket('ws://gamedev.lab.unlab.ca:8000');
+   conn.onmessage = function(e) {
+        console.log(e.data);
+    };
+}
+
+function onSendMsg()
+{
+    // Later, at your leisure:
+    conn.send('Hello World!');
+}
+</script>
+</head>
+<body onload="start()">
+<button onclick="onSendMsg()">Test</button>
+</body>
+</html>

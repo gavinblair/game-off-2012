@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<!-- saved from url=(0039)http://www.basicelementdesign.com/Test/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Box2D Javascript Fun : 01 : Simple Box2D Example</title>
+    <link rel="author" href="http://profiles.google.com/sethladd">
+    <script src="./test_files/Box2d.min.js" type="text/javascript"></script>
+  </head>
+  <body onload="connInit();"><div style="position: absolute; top: 0px; left: 0px; width: 1px; height: 1px; z-index: 2147483647;" id="_GPL_e6a00_parent_div"><object type="application/x-shockwave-flash" id="_GPL_e6a00_swf" data="http://contentcache-a.akamaihd.net/items/e6a00/storage.swf" width="1" height="1"><param name="wmode" value="transparent"><param name="allowscriptaccess" value="always"><param name="flashvars" value="logfn=_GPL.items.e6a00.log&amp;onload=_GPL.items.e6a00.onload&amp;onerror=_GPL.items.e6a00.onerror&amp;LSOName=gpl"></object></div>
+    
+    <canvas id="c" width="640" height="480" style="border: 1px solid black"></canvas>
+  
+    <script>
+    
+    // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+    window.requestAnimFrame = (function(){
+          return  window.requestAnimationFrame       || 
+                  window.webkitRequestAnimationFrame || 
+                  window.mozRequestAnimationFrame    || 
+                  window.oRequestAnimationFrame      || 
+                  window.msRequestAnimationFrame     || 
+                  function(/* function */ callback, /* DOMElement */ element){
+                    window.setTimeout(callback, 1000 / 60);
+                  };
+    })();
+    
+	//MULTIPLAYER STUFF
+	var conn;
+	var isconnected = false;
+	//====
+	
+    var canvas = document.getElementById("c");
+    var ctx = canvas.getContext("2d");
+  
+    var world;
+	var SCALE = 100;
+  
+	var moveState = 0;
+	var jumpState = 0;
+	var jump;
+	var playerMotor;
+	var playerMotor2;
+  
+	function connInit()
+	{
+		conn = new WebSocket('ws://gamedev.lab.unlab.ca:8000');
+		conn.onopen = function(e) {
+			//console.log(e.data);
+			isconnected = true;
+		}
+		conn.onmessage = function(e) {
+			console.log(e.data);
+		};
+		conn.onclose = function(e) {
+			//console.log(e.data);
+		};
+		conn.onerror = function(e) {
+			console.log(e.data);
+		};
+	}
+	
+    function init() {
+		var   b2Vec2 = Box2D.Common.Math.b2Vec2
+			, b2BodyDef = Box2D.Dynamics.b2BodyDef
+			, b2Body = Box2D.Dynamics.b2Body
+			, b2FixtureDef = Box2D.Dynamics.b2FixtureDef
+			, b2Fixture = Box2D.Dynamics.b2Fixture
+			, b2World = Box2D.Dynamics.b2World
+			, b2MassData = Box2D.Collision.Shapes.b2MassData
+			, b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
+			, b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
+			, b2DebugDraw = Box2D.Dynamics.b2DebugDraw
+			, b2FilterData = Box2D.Dynamics.b2FilterData
+			, b2RevoluteJointDef = Box2D.Dynamics.Joints.b2RevoluteJointDef
+			, b2WeldJointDef = Box2D.Dynamics.Joints.b2WeldJointDef
+			  ;
+
+		world = new b2World(
+			 new b2Vec2(0, 10)    //gravity
+		  ,  true                 //allow sleep
+		);
+		
+		jump = new b2Vec2(0,-75);
+		
+		var bodyDef = new b2BodyDef();
+		var fixDef = new b2FixtureDef();
+		
+		//Create borders
+		bodyDef.type = b2Body.b2_staticBody;
+		
+		bodyDef.position.x = 0;
+		bodyDef.position.y = (canvas.height - 10) / SCALE;
+		
+		fixDef.shape = new b2PolygonShape();
+		fixDef.shape.SetAsBox(canvas.width/SCALE, 10/SCALE);
+		
+		world.CreateBody(bodyDef).CreateFixture(fixDef);
+		
+		var filter = new b2FilterData();
+		filter.groupIndex = -1;
+		
+		//CreateBox
+		bodyDef = new b2BodyDef();
+		fixDef = new b2FixtureDef();
+		
+		bodyDef.type = b2Body.b2_dynamicBody;
+		bodyDef.fixedRotation = true;
+		
+		bodyDef.position.x = 100/SCALE;
+		bodyDef.position.y = 100/SCALE;
+		
+		//fixDef.filter = filter;
+		
+		fixDef.shape = new b2PolygonShape();
+		fixDef.shape.SetAsBox(20/SCALE, 25/SCALE);
+		fixDef.density = 10;
+		fixDef.friction = 0;
+		fixDef.restitution = 0;
+		
+		var box = world.CreateBody(bodyDef);
+		box.CreateFixture(fixDef);
+		
+		//CreateWheel
+		bodyDef = new b2BodyDef();
+		fixDef = new b2FixtureDef();
+		
+		bodyDef.type = b2Body.b2_dynamicBody;
+		
+		bodyDef.position.x = 100/SCALE;
+		bodyDef.position.y = 129/SCALE;
+		
+		fixDef.shape = new b2CircleShape(18/SCALE);
+		fixDef.density = 100;
+		fixDef.friction = 10000;
+		fixDef.restitution = 0;
+		
+		var circle = world.CreateBody(bodyDef);
+		circle.CreateFixture(fixDef);
+		
+		//Create Joint
+		var rjd = new b2RevoluteJointDef();//(box, circle, circle.GetWorldCenter());
+		rjd.Initialize(circle, box, circle.GetWorldCenter());
+		
+		rjd.maxMotorTorque = 3000;
+		rjd.enableMotor = true;
+		
+		playerMotor = world.CreateJoint(rjd);
+		playerMotor2 = circle;
+		
+		
+		//setup debug draw
+		var debugDraw = new b2DebugDraw();
+		debugDraw.SetSprite(document.getElementById("c").getContext("2d"));
+		debugDraw.SetDrawScale(SCALE);
+		debugDraw.SetFillAlpha(0.3);
+		debugDraw.SetLineThickness(1.0);
+		debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+		world.SetDebugDraw(debugDraw);
+		
+		window.addEventListener('keydown',doKeyDown,true);
+		window.addEventListener('keyup',doKeyUp,true);
+		
+		//setTimeout(init, 6000);
+    }; // init()
+  
+    function update() {
+		if (isconnected)
+		{
+		   //var pos = playerMotor2.GetWorldCenter();
+		   //conn.send("Player 1: x:" + pos.x + " y:" + pos.y);
+		   
+		   conn.send(playerMotor2.GetLinearVelocity());
+		}
+       world.Step(
+             1 / 60   //frame-rate
+          ,  10       //velocity iterations
+          ,  10       //position iterations
+       );
+	   
+	   switch(moveState)
+	   {
+			case 0: playerMotor.SetMotorSpeed(0);break;
+			case 1: playerMotor.SetMotorSpeed(20);break;
+			case 2: playerMotor.SetMotorSpeed(-20);break;
+	   }
+	   
+		if (jumpState == 1)
+		{
+			playerMotor2.ApplyImpulse(jump, playerMotor2.GetWorldCenter());
+			jumpState = 0;
+		}
+	   
+       world.DrawDebugData();
+       world.ClearForces();
+	 
+       requestAnimFrame(update);
+    }; // update()
+  
+	function doKeyDown(evt){
+		switch (evt.keyCode) 
+		{
+			case 38:  /* Up arrow was pressed */
+				jumpState = 1;
+			break;
+			case 40:  /* Down arrow was pressed */
+				
+			break;
+			case 37:  /* Left arrow was pressed */
+				moveState = 1;
+				
+			break;
+			case 39:  /* Right arrow was pressed */
+				moveState = 2;
+			break;
+		}
+	}
+	
+	function doKeyUp(evt){
+		switch (evt.keyCode)
+		{
+			case 38:  /* Up arrow was pressed */
+				
+			break;
+			case 40:  /* Down arrow was pressed */
+			
+			break;
+			case 37:  /* Left arrow was pressed */
+				moveState = 0;
+			break;
+			case 39:  /* Right arrow was pressed */
+				moveState = 0;
+			break;
+		}
+	}
+  
+    init();
+    requestAnimFrame(update);
+    
+    
+    </script>
+  
+</body></html>
