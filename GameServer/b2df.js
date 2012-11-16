@@ -1,6 +1,11 @@
 var running;
 var world;
 
+var b2d_obj = new Array();
+
+var st_obj = {};
+var dy_obj = {};
+
 var PPP = 100;
 
 function init()
@@ -33,18 +38,7 @@ function init()
 	var ground = world.CreateBody(bodyDef);
 	ground.CreateFixture(fixDef);
 
-	//var prop = new Array();
-	var prop = {};
-	prop["id"] = "ground";
-	prop["pos"] = ground.GetPosition();
-	prop["width"] = 640.0/PPP;
-	prop["height"] = 30.0/PPP;
-
-	thread.emit('objUpdate'
-		, "ground"
-		, JSON.stringify(prop)
-		, JSON.stringify(false)
-	);
+	initObj('ground', ground, 640.0, 30.0);
 
 	thread.emit('msg', 'test');
 
@@ -58,3 +52,59 @@ function init()
 		);
 	}
 }
+
+function initObj(id, body, width, height){
+	var prop = {};
+	prop["id"] = id;
+	prop["pos"] = body.GetPosition();
+	prop["width"] = width/PPP;
+	prop["height"] = height/PPP;
+		
+	if (body.GetType() = b2Body.b2_staticBody)
+	{
+		st_obj[prop["id"]] = prop;
+	}
+	else if (body.GetType() = b2Body.b2_dynamicBody)
+	{
+		dy_obj[prop["id"]] = prop;
+	}
+}
+
+function updateObject(id, body){
+	
+	if (body.GetType() = b2Body.b2_staticBody)
+	{
+		var prop = st_obj[id];
+		prop["pos"] = body.GetPosition();
+		
+		st_obj[prop["id"]] = prop;
+	}
+	else if (body.GetType() = b2Body.b2_dynamicBody)
+	{
+		var prop = dy_obj[id];
+		prop["pos"] = body.GetPosition();
+		
+		dy_obj[prop["id"]] = prop;
+	}
+}
+
+function updateAll(){
+	thread.emit('drawall'
+		, JSON.stringify(st_obj)
+		, JSON.stringify(dy_obj)
+	);
+}
+
+function updateDynamic(){
+	thread.emit('drawdynamic'
+		, JSON.stringify(dy_obj)
+	);
+}
+
+thread.on('drawall', function(){
+	updateAll();
+});
+
+thread.on('drawdynamic', function(){
+	updateDynamic();
+});

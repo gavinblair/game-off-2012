@@ -43,7 +43,10 @@
 				console.log('This doesn\'t look like a valid JSON: ', message.data);
 				return;
 			}
-
+			
+			console.log("beep");
+			var obj = json.data;
+			console.log(obj);
 			// NOTE: if you're not sure about the JSON structure
 			// check the server source code above
 			if (json.type === 'initWorld') { // initialize world peices
