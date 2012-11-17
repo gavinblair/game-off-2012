@@ -1,6 +1,8 @@
 var running;
 var world;
 
+var b2d_obj = {};
+
 var PPP = 100;
 
 function init()
@@ -32,29 +34,66 @@ function init()
 
 	var ground = world.CreateBody(bodyDef);
 	ground.CreateFixture(fixDef);
+	
+	thread.emit('msg', 'creating ground');
+	createNewObject('ground', ground, 640, 30);
 
-	//var prop = new Array();
-	var prop = {};
-	prop["id"] = "ground";
-	prop["pos"] = ground.GetPosition();
-	prop["width"] = 640.0/PPP;
-	prop["height"] = 30.0/PPP;
+	bodyDef = new b2BodyDef();
+	fixDef = new b2FixtureDef();	
 
-	thread.emit('objUpdate'
-		, "ground"
-		, JSON.stringify(prop)
-		, JSON.stringify(false)
-	);
+	bodyDef.type = b2Body.b2_dynamicBody;
 
-	thread.emit('msg', 'test');
+	fixDef.shape = new b2PolygonShape();
+	fixDef.shape.SetAsBox(100.0/PPP, 100.0/PPP);
 
+	bodyDef.position.x = 100.0/PPP;
+	bodyDef.position.y = 100.0/PPP;
+
+	var box = world.CreateBody(bodyDef);
+	box.CreateFixture(fixDef);
+	
+	thread.emit('msg', 'creating box');
+	createNewObject('box', box, 100, 100);
+	
+	thread.emit('msg',JSON.stringify(running));
 	//Update Loop
 	while (running)
 	{
+		
 		world.Step(
 			1/60	//frame-rate
 			, 10	//velocity iterations
 			, 10	//position iterations
 		);
+		
+		updateObject('box');
 	}
+	
+	thread.emit('msg', 'done b2df');
+}
+
+function createNewObject(id, body, width, height)
+{
+	var prop = {};
+	prop['id'] = id;
+	prop['type'] = body.GetType();
+	prop['pos'] = body.GetPosition();
+	prop['width'] = width/PPP;
+	prop['height'] = height/PPP;
+	
+	b2d_obj[id] = body;
+	
+	thread.emit('createNewObject', JSON.stringify(prop));
+}
+
+function updateObject(id)
+{
+	var body = b2d_obj[id];
+
+	var prop = {};
+	prop['id'] = id;
+	prop['type'] = body.GetType();
+	prop['pos'] = body.GetPosition();
+	
+	thread.emit('updateObject', JSON.stringify(prop));
 }
