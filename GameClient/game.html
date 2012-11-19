@@ -46,8 +46,9 @@
 			
 			// NOTE: if you're not sure about the JSON structure
 			// check the server source code above
-			if (json.type === 'updateStatics') { // initialize world peices
-				var st_obj = json.data;
+			if (json.type == 'init') { // initialize world peices
+				/*var st_obj = json.data;
+				
 				for (var key in st_obj)
 				{
 					var obj = st_obj[key];
@@ -60,36 +61,46 @@
 					
 					context.fillStyle = "rgb(150,29,28)";
 					context.fillRect (x,y,w,h);
-				}
-			}
-			else if (json.type === 'updateDynamics') { // initialize world peices
-				var dy_obj = json.data;
-				for (var key in dy_obj)
+				}*/
+				var objs = json.data;
+				
+				for (var id in objs)
 				{
-					var obj = dy_obj[key];
-					console.log(obj);
+					console.log('draw ' + id);
 					
+					var obj = objs[id];
 					var x = obj.pos.x * PPP;
 					var y = obj.pos.y * PPP;
-					var w = obj.width * PPP;
-					var h = obj.height * PPP;
+					var w,h = 0;
 					
-					context.fillStyle = "rgb(0,255,0)";
+					if (obj.id == 'box')
+					{
+						w = 100;
+						h = 100;
+					}
+					else if (obj.id == 'ground')
+					{
+						w = 640;
+						h = 30;
+					}
+
+					context.fillStyle = "rgb(150,29,28)";
 					context.fillRect (x,y,w,h);
 				}
 			}
-			else if (json.type === 'updateObject') { // initialize world peices
+			else if (json.type == 'updateObj') {
+				
+				console.log('update ' + json.data.id);
+				
 				var obj = json.data;
-				
-				console.log(obj);
-				
 				var x = obj.pos.x * PPP;
 				var y = obj.pos.y * PPP;
-				var w = obj.width * PPP;
-				var h = obj.height * PPP;
-				
-				context.fillStyle = "rgb(0,255,0)";
+				var w = 100;
+				var h = 100;
+
+				context.fillStyle = "rgb(25,198,25)";
 				context.fillRect (x,y,w,h);
+
 			}
 			else {
 				console.log('Hmm..., I\'ve never seen JSON like this: ', json);
