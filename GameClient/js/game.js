@@ -68,7 +68,6 @@ $(document).ready(function(){
 				type: 'msg',
 				data: msg
 			}));
-			$("#chat").prepend(msg+"\n");
 		}
 	});
 
@@ -102,7 +101,11 @@ function login(){
 				$("#players").append("<li>"+json.data[i]+"</li>");
 			}
 		} else if (json.type == 'msg') {
-			$("#chat").prepend(json.data+"\n");
+			$("#chat").append(json.data+"\n");
+			var psconsole = $('#chat');
+		    psconsole.scrollTop(
+		        psconsole[0].scrollHeight - psconsole.height()
+		    );
 		} else if (json.type === 'update') { // it's a single message
 			
 		} else if (json.type == 'remove'){
