@@ -75,8 +75,6 @@ $(document).ready(function(){
 
 function login(){
 
-	$("#players").append("<li>"+localStorage.name+"</li>");
-
 	connection.send(JSON.stringify({
 		type: 'login',
 	  	data: localStorage.name
@@ -95,8 +93,9 @@ function login(){
 		}
 
 		console.log(json);
-		if (json.type === 'connect') {
+		if (json.type === 'connect' || json.type === 'update') {
 			//got a list of players
+			$("#players li").remove();
 			for(var i in json.data){
 				$("#players").append("<li>"+json.data[i]+"</li>");
 			}
