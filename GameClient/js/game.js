@@ -68,6 +68,11 @@ $(document).ready(function(){
 				type: 'msg',
 				data: msg
 			}));
+
+			var scrollme = $('#chat');
+		    scrollme.scrollTop(
+		        scrollme[0].scrollHeight - scrollme.height()
+		    );
 		}
 	});
 
@@ -101,10 +106,6 @@ function login(){
 			}
 		} else if (json.type == 'msg') {
 			$("#chat").append(json.data+"\n");
-			var psconsole = $('#chat');
-		    psconsole.scrollTop(
-		        psconsole[0].scrollHeight - psconsole.height()
-		    );
 		} else if (json.type === 'update') { // it's a single message
 			
 		} else if (json.type == 'remove'){
