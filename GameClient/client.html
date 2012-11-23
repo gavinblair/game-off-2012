@@ -12,6 +12,7 @@
 			<input id="name" type="text" onClick="nameClick();" value="Enter your name."></input>
 			<button id="send" onClick="sendName();">Send</button>
 		</div>
+		<script type="text/javascript" src="config.js"></script>
 		<script>
 			
 			function nameClick(){
@@ -46,7 +47,7 @@
 			}
 
 			// open connection
-			var connection = new WebSocket('ws://gamedev.lab.unlab.ca:1337');
+			var connection = new WebSocket(websocketurl);
 
 			connection.onopen = function () {
 				console.log('connected!');
