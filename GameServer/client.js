@@ -5,7 +5,6 @@
 var port = 1337;
 var NumOfObjects = 0;
 var clients = [];
-var objs = [];
 
 var WebSocketServer = require('websocket').server;
 var http = require('http');
@@ -24,68 +23,90 @@ wss.on('request',function (request){				//New Client Connecting
 	var connection = request.accept(null, request.origin);
 	console.log('Request accepted from ' + request.origin);
 	
-	clients.push(connection);
+	//clients.push(connection);
 	
-	connection.sendUTF(JSON.stringify({type:'init', data: objs}));
-	
-	NumOfObjects ++;
-	
-	console.log(clients.length-1);
-	
-	var obj = {};
-	obj['client'] = clients.length-1;
-	obj['x'] = 50 + (50 * clients.length);
-	obj['y'] = 50 + (50 * clients.length);
-	obj['sprite'] = 'player';
-	
-	objs.push(obj);
-	
-	updateClients(obj);
+	connection.sendUTF(JSON.stringify({type:'connect', data: getClientList()}));
 	
 	//Message
 	connection.on('message', function onMessage(message){
 		if (message.type === 'utf8') {
 			var json = JSON.parse(message.utf8Data);
 			
-			if (json.type == "")
+			if (json.type == "login")
 			{
-			
+				//CLIENT SENT NAME, CREATE CLIENT
+					var client = {};
+					client['conn'] = this;
+					client['id'] = json.data;
+					client['ready'] = false;
+					
+					clients.push(client);
+					
+					msgClients(client.id + " has connected!");
+					updateClients();
+				
+					console.log(json.data + " has joined the game.");
 			}
-			else if (json.type == "")
+			else if (json.type == 'ready')
 			{
-			
+				console.log(json.data + " is ready.")
+				msgClients(json.data + " is ready.");
+				clients[json.data].ready = true;
+				updateClients();
+			}
+			else if (json.type == "msg")
+			{
+				console.log(json.data);
+				
+				msgClients(json.data);
 			}
 		}
 	});
 	
 	connection.on('close', function () {
-		
-		var id = -1;
-		for (var i=0; i<clients.length;i++)
+		for (var i in clients)
 		{
-			if (clients[i] == this)
+			var cli = clients[i];
+			if (cli.conn == this)
 			{
-				id = i;
+				msgClients(cli.id + ' has disconnected.');
+				console.log(cli.id + " has disconnected");
+				clients.splice(i,1);
+				updateClients(cli.id);
+				break;
 			}
 		}
 		
-		clients.splice(id,1);
-		objs.splice(id,1);
 		
-		for (var i = 0; i<clients.length; i++)
-		{
-			var connection = clients[i];
-			console.log('removing ' + id);
-			connection.sendUTF(JSON.stringify({type:'remove', data: id}));
-		}
 	});
 });
 
-function updateClients(obj)
-{
-	for (var i = 0; i<clients.length; i++)
+function getClientList(clientToSend){
+	var clientList = {};
+	
+	for (var i in clients)
 	{
-		var connection = clients[i];
-		connection.sendUTF(JSON.stringify({type:'update', data: obj}));
+		clientList[clients[i].id] = {};
+		clientList[clients[i].id]['ready'] = clients[i].ready;
+	}
+	
+	return clientList;
+}
+
+function msgClients(message)
+{
+	for (var i in clients)
+	{
+		var oc = clients[i];
+		oc.conn.sendUTF(JSON.stringify({type:'msg', data: message}));
+	}
+}
+
+function updateClients()
+{
+	for (var i in clients)
+	{
+		var oc = clients[i];
+		oc.conn.sendUTF(JSON.stringify({type:'update', data: getClientList()}));
 	}
 }
