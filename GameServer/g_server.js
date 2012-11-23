@@ -48,6 +48,7 @@ server.listen(port, function(){						//Start listening on HTTP
 var wss = new WebSocketServer({httpServer: server});//Start websocket from http
 
 wss.on('request',function (request){				//New Client Connecting
+	console.log('bing!');
 	var connection = request.accept(null, request.origin);
 	console.log('Request accepted from ' + request.origin);
 	
