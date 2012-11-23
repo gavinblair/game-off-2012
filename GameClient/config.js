@@ -1,0 +1,1 @@
+var websocketurl = 'ws://gamedev.lab.unlab.ca:1337';
