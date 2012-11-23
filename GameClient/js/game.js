@@ -61,13 +61,14 @@ $(document).ready(function(){
 
 	$("#msg").keydown(function(e){
 		if(e.keyCode == 13) {
-			var msg = $(this).val();
+			var msg = localStorage.name+": "+$(this).val();
 			$(this).val("");
 
 			connection.send(JSON.stringify({
 				type: 'msg',
 				data: msg
 			}));
+			$("#chat").prepend(msg+"\n");
 		}
 	});
 
