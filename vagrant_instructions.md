@@ -18,6 +18,21 @@ Create a folder in C:\vagrant for your projects:
 `$ mkdir projects`
 `$ cd projects`
 
+Now it's time to set up nodejs:
+`$ git clone https://github.com/jamescarr/nodejs-vagrant`
+`$ cd nodejs-vagrant`
+`$ git submodule init && git submodule update`
+`$ rm -rf .git*`
+
+Clone the nodejs project:
+`$ git clone git@github.com:gavinblair/game-off-2012.git`
+
+Start up the nodejs box. Be sure to be in the directory with the VagrantFile:
+`$ vagrant up`
+
+Wait for the box to boot up. Once it's done, 
+
+
 To can set up a LAMP (Linux, Apache, MySQL, PHP) box:
 
 `$ git clone https://github.com/ymainier/vagrant-lamp.git lamp`
