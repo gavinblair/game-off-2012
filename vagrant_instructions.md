@@ -27,12 +27,6 @@ Now it's time to set up nodejs:
 $ git clone https://github.com/jamescarr/nodejs-vagrant
 $ cd nodejs-vagrant
 $ git submodule init && git submodule update
-$ rm -rf .git*
-```
-
-Clone the nodejs project:
-```
-$ git clone git@github.com:gavinblair/game-off-2012.git
 ```
 
 Start up the nodejs box. Be sure to be in the directory with the VagrantFile:
@@ -40,7 +34,19 @@ Start up the nodejs box. Be sure to be in the directory with the VagrantFile:
 $ vagrant up
 ```
 
-Wait for the box to boot up - it will take a while. Once it's done, 
+Wait for the box to boot up - it will take a while. Once it's done, ssh into the box:
+```
+$ ssh vagrant@127.0.0.1 -p2222
+```
+
+
+
+
+Clone the nodejs project:
+```
+$ git clone git@github.com:gavinblair/game-off-2012.git
+```
+
 
 
 To can set up a LAMP (Linux, Apache, MySQL, PHP) box:
